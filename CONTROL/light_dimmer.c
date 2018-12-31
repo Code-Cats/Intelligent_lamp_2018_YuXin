@@ -235,7 +235,7 @@ void LED_ControlTask(void)	//定时周期2ms
 				{
 					LED_Control.dimmer.delayOFF_count++;
 				}
-				if(LED_Control.dimmer.delayOFF_count>=500)	//超过500*2=1000ms就退出为定光状态
+				if(LED_Control.dimmer.delayOFF_count>=700)	//超过700*2=1400ms就退出为定光状态
 				{
 					LED_Control.state=ON_FIXED_LIGHT;	//切换到定光态
 				}
@@ -250,6 +250,7 @@ void LED_ControlTask(void)	//定时周期2ms
 			*/
 			if(TOUCH_AUTO_OFF==TOUCHING)
 			{
+				LED_Control.dimmer.delayOFF_count=0;	//清零关闭调光计数
 				if(LightDimmer.Touch_AF.AF_down_count<0xFFFF)
 				LightDimmer.Touch_AF.AF_down_count++;
 			}
@@ -260,6 +261,7 @@ void LED_ControlTask(void)	//定时周期2ms
 			
 			if(TOUCH_ON_OFF==TOUCHING)
 			{
+				LED_Control.dimmer.delayOFF_count=0;	//清零关闭调光计数
 				if(LightDimmer.Touch_AF.AF_up_count<0xFFFF)
 				LightDimmer.Touch_AF.AF_up_count++;
 			}
@@ -411,7 +413,7 @@ void LED_dimmer(void)	//调光子函数
 		LightDimmer.RatioData.ratio_f=LightDimmer.RatioData.ratio;	//防止ratio_f的值对其造成影响，直接同化
 	}
 	
-	LightDimmer.RatioData.ratio_filter=0.4f*LightDimmer.RatioData.ratio_filter+0.6f*LightDimmer.RatioData.ratio_f;
+//	LightDimmer.RatioData.ratio_filter=0.4f*LightDimmer.RatioData.ratio_filter+0.6f*LightDimmer.RatioData.ratio_f;
 	
 	LightDimmer.RatioData.record[LightDimmer.RatioData.recode_count]=LightDimmer.RatioData.ratio;	//
 	LightDimmer.RatioData.recode_count++;
@@ -448,7 +450,7 @@ void Dis_dimmer_Debounce(u16 dis)	//跳变消除函数，仅当该函数返回1时ratio才继续记
 //	GY_53_dis_diff();
 	GY_53_dis_diff(dis);	//获取相对于上一次采样的变化
 	
-	test_t=ABS(LightDimmer.Dis_diff.now_data);
+//	test_t=ABS(LightDimmer.Dis_diff.now_data);
 	if(test_t>DISTURBANCE_THRESHOLD)	//如果差值太大，则进行回滚和失能
 	{
 		

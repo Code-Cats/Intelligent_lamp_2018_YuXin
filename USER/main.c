@@ -42,12 +42,13 @@ u16 TIM_R=0;
  u8 test_pa[2]={0};
  
  u16 Chanel0_Val,Chanel1_Val=0;
- 
+ #define TIME_RECALL 10	//这里参照light_dimmer
 // u16 pwm_tem=500;
  int main(void)
  {	
 	 LED_Control.state=POWER_OFF;
 	 LED_Control.dimmer.touchDimmer_last=TOUCHING;
+	 LightDimmer.Dis_diff.recover_count=TIME_RECALL+2;	//防止第一次调光出现熄灭的情况
 	delay_init();
 	delay_ms(200);
 	//AFIO->MAPR|=AFIO_MAPR_SWJ_CFG_JTAGDISABLE;	//	禁用JTAG，只启用SWD方式调试,貌似这条语句没有起到该有的作用
