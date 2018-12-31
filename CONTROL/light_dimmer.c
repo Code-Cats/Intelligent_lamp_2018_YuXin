@@ -8,7 +8,7 @@ LightDimmerTypeDef LightDimmer;
 
 LEDControlTypeDef LED_Control={0};
 
-#define DISTURBANCE_THRESHOLD 27
+#define DISTURBANCE_THRESHOLD 26
 
 extern u32 time_2ms_count;
 
@@ -450,7 +450,7 @@ void Dis_dimmer_Debounce(u16 dis)	//跳变消除函数，仅当该函数返回1时ratio才继续记
 //	GY_53_dis_diff();
 	GY_53_dis_diff(dis);	//获取相对于上一次采样的变化
 	
-//	test_t=ABS(LightDimmer.Dis_diff.now_data);
+	test_t=ABS(LightDimmer.Dis_diff.now_data);
 	if(test_t>DISTURBANCE_THRESHOLD)	//如果差值太大，则进行回滚和失能
 	{
 		
