@@ -80,6 +80,8 @@ void LED_ControlTask(void)	//定时周期2ms
 			
 			if(TOUCH_ON_OFF==TOUCHING&&LED_Control.touchPower_last==DISTOUCH)	//直接按开关开启
 			{
+				LED_Control.Auto_ON.dark_count=0;	//清零以便下一次
+				
 				LED_Control.state=ON_FIXED_LIGHT;	//切换到定光态
 				
 				LightDimmer.RatioData.ratio=calc_ratioFormLux(LED_Control.Lux.rawdata,YHE_BEST_LUX);	//后面这个有待优化
@@ -103,7 +105,7 @@ void LED_ControlTask(void)	//定时周期2ms
 						LED_Control.Auto_ON.bright_count++;
 						if(LED_Control.Auto_ON.bright_count>=AUTO_ON_RECOED_NUM)
 						{
-							LED_Control.Auto_ON.bright_count=0;
+							LED_Control.Auto_ON.bright_count=0;	//这个count是记录存放位置的
 						}
 						LED_Control.Auto_ON.bright_record[LED_Control.Auto_ON.bright_count]=LED_Control.Lux.rawdata;	//一个循环40分钟
 					}
@@ -129,8 +131,16 @@ void LED_ControlTask(void)	//定时周期2ms
 			
 			break;
 		}
-		case AUTO_POWER_ON:
+		case AUTO_POWER_ON:	//已经亮了
 		{
+			if(TOUCH_ON_OFF==TOUCHING&&LED_Control.touchPower_last==DISTOUCH)	//直接按开关关闭
+			{
+				LED_Control.Auto_ON.wait_confirm_time=0;	//清零以便下一次
+				
+				LED_Control.state=POWER_OFF;	//切换到关闭态
+			}
+			LED_Control.touchPower_last=TOUCH_ON_OFF;
+			
 			LED_Control.Auto_ON.wait_confirm_time++;
 			if(LED_Control.Auto_ON.wait_confirm_time<500*60)	//1min内
 			{
@@ -149,6 +159,14 @@ void LED_ControlTask(void)	//定时周期2ms
 		}
 		case WAIT_AUTO_OFF:
 		{
+			if(TOUCH_ON_OFF==TOUCHING&&LED_Control.touchPower_last==DISTOUCH)	//直接按开关关闭
+			{
+				LED_Control.Auto_OFF.wait_off_time=0;	//清零以便下一次
+				
+				LED_Control.state=POWER_OFF;	//切换到关闭态
+			}
+			LED_Control.touchPower_last=TOUCH_ON_OFF;
+			
 			LED_Control.Auto_OFF.wait_off_time++;
 			if(LED_Control.Auto_OFF.wait_off_time<500*120)	//在120秒之内检测ACK
 			{
@@ -185,6 +203,12 @@ void LED_ControlTask(void)	//定时周期2ms
 				flag=!flag;
 				LED_Control.Out.Main_pwmTar=(u16)(5*(100-LightDimmer.RatioData.ratio*flag));
 			}
+			
+			if(TOUCH_ON_OFF==TOUCHING&&LED_Control.touchPower_last==DISTOUCH)	//直接按开关关闭
+			{
+				LED_Control.state=POWER_OFF;	//切换到关闭态
+			}
+			LED_Control.touchPower_last=TOUCH_ON_OFF;
 			break;
 		}
 		case ON_FIXED_LIGHT:
@@ -220,6 +244,8 @@ void LED_ControlTask(void)	//定时周期2ms
 			if(TOUCH_DIMMER==TOUCHING&&LED_Control.dimmer.touchDimmer_last==DISTOUCH)	//状态切换的
 			{
 				//LED_Control.dimmer.enable=!LED_Control.dimmer.enable;
+				LED_Control.dimmer.delayOFF_count=0;	//清零以便下一次
+				
 				LED_Control.state=ON_FIXED_LIGHT;	//切换到定光态
 			}
 			LED_Control.dimmer.touchDimmer_last=TOUCH_DIMMER;
@@ -237,6 +263,7 @@ void LED_ControlTask(void)	//定时周期2ms
 				}
 				if(LED_Control.dimmer.delayOFF_count>=700)	//超过700*2=1400ms就退出为定光状态
 				{
+					LED_Control.dimmer.delayOFF_count=0;	//清零以便下一次
 					LED_Control.state=ON_FIXED_LIGHT;	//切换到定光态
 				}
 			}
@@ -448,7 +475,7 @@ void Dis_dimmer_Debounce(u16 dis)	//跳变消除函数，仅当该函数返回1时ratio才继续记
 	//可以简单计算，正常调光人手最多每秒移动30-40cm，按照30计算，超过30不更新（超过40才记为跳变？）
 	//那么按照30算，即1s  300mm，即20ms  6mm,即正常人手移动一个20ms周期只移动6mm
 //	GY_53_dis_diff();
-	GY_53_dis_diff(dis);	//获取相对于上一次采样的变化
+	GY_53_dis_diff(dis);	//获取相对于上一次采样的变化  放到外面。。。防止异常？
 	
 	test_t=ABS(LightDimmer.Dis_diff.now_data);
 	if(test_t>DISTURBANCE_THRESHOLD)	//如果差值太大，则进行回滚和失能

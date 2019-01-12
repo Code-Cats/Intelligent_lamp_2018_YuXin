@@ -32,10 +32,6 @@ u8 test1=0xA5;
 u8 test2=0xAE;
 u8 test_sum=0;
 
-///////////////////
-s8 test_abs_in=-4;
-s8 test_result=0;
-//////////////////
 
 u16 TIM_R=0;
 
@@ -49,6 +45,7 @@ u16 TIM_R=0;
 	 LED_Control.state=POWER_OFF;
 	 LED_Control.dimmer.touchDimmer_last=TOUCHING;
 	 LightDimmer.Dis_diff.recover_count=TIME_RECALL+2;	//防止第一次调光出现熄灭的情况
+	 LightDimmer.DisData.lastdata=260;	//也是防止第一次调光出现异常
 	delay_init();
 	delay_ms(200);
 	//AFIO->MAPR|=AFIO_MAPR_SWJ_CFG_JTAGDISABLE;	//	禁用JTAG，只启用SWD方式调试,貌似这条语句没有起到该有的作用
@@ -76,9 +73,6 @@ u16 TIM_R=0;
 //	 GY_53_CMD(0x25);	//保存参数
   while(1)
 	{
-		
-		test_result=ABS(test_abs_in);
-		test_sum=test1+test2;
 ////		USART_SendData(USART1,10);
 //GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable,ENABLE);//调用GPIO重映射函数		
 //		PWM_PB4_Set(pwm_tem);
@@ -95,13 +89,8 @@ u16 TIM_R=0;
 		
 //		TIM3_1=(u16)(5*(100-LightDimmer.RatioData.ratio_filter));
 //		TIM3_2=(u16)(5*(100-LightDimmer.RatioData.ratio_filter));
-		  
-//		PA9=test_pa[0];
-//		PA10=test_pa[1];
-		
-		LED=1;
+		  	
 		delay_ms(200);
-		LED=0;
 		
 //		TIM_R=TSL2561_Read(TSL2561_TIMING);
 		
